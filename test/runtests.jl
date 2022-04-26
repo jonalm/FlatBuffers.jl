@@ -75,6 +75,8 @@ end
     	Foo.MonsterStart(b)
     	Foo.MonsterAddPos(b, pos)
     	Foo.MonsterAddMana(b, mana)
+		Foo.MonsterAddMydouble(b, 1.234)
+
 		Foo.MonsterAddArrayofdoubles(b, doubles_)
 
     	Foo.MonsterAddColor(b, color)
@@ -95,6 +97,8 @@ end
 	    @test monster_.weapons[2].name === w2_name
 	    @test monster_.weapons[1].damage === w1_damage
 	    @test monster_.weapons[2].damage === w2_damage
+		
+		@test monster_.mydouble ===  1.234
 		@test monster_.arrayofdoubles[1] ===  doubles_[1]
 	else
 		@info "Didn't find flatc executable in as `ENV[\"FLATC\"]`"
