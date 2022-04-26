@@ -99,7 +99,10 @@ end
 	    @test monster_.weapons[2].damage === w2_damage
 		
 		@test monster_.mydouble ===  1.234
-		@test monster_.arrayofdoubles[1] ===  doubles_[1]
+		#@test monster_.arrayofdoubles[1] ===  doubles_[1]
+
+		@test monster_[Foo.MonsterProperties.arrayofdoubles][1] ===  doubles_[1]
+
 	else
 		@info "Didn't find flatc executable in as `ENV[\"FLATC\"]`"
 	end
