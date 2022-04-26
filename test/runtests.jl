@@ -64,9 +64,19 @@ end
     	    FlatBuffers.prependoffset!(b, w)
     	end
     	weapons = FlatBuffers.endvector!(b, length(weapon_vec))
+
+		doubles = [1.0, 2.0, 3.0]
+		Foo.MonsterStartArrayofdoublesVector(b, length(doubles))
+    	for w in Iterators.reverse(doubles)
+    	    FlatBuffers.prependoffset!(b, w)
+    	end
+    	doubles_ = FlatBuffers.endvector!(b, length(doubles))
+
     	Foo.MonsterStart(b)
     	Foo.MonsterAddPos(b, pos)
     	Foo.MonsterAddMana(b, mana)
+		Foo.MonsterAddArrayofdoubles(b, doubles_)
+
     	Foo.MonsterAddColor(b, color)
     	Foo.MonsterAddHp(b, hp)
     	Foo.MonsterAddWeapons(b,  weapons)
@@ -85,7 +95,7 @@ end
 	    @test monster_.weapons[2].name === w2_name
 	    @test monster_.weapons[1].damage === w1_damage
 	    @test monster_.weapons[2].damage === w2_damage
-		#rm(codegendir)
+		@test monster_.arrayofdoubles[1] ===  doubles_[1]
 	else
 		@info "Didn't find flatc executable in as `ENV[\"FLATC\"]`"
 	end

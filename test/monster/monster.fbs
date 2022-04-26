@@ -17,6 +17,7 @@ table Monster {
   mana:short = 150;
   hp:short = 100;
   name:string;
+  arrayofdoubles: [double];
   friendly:bool = false (deprecated);
   inventory:[ubyte];  // Vector of scalars.
   color:Color = Blue; // Enum.
