@@ -1,34 +1,33 @@
 using FlatBuffers
 using Test
-
-
-@testset "PR 234 Arrow.jl: bugfix parsing primitive arrays" begin
-	buf = [
-	    0x14,0x00,0x00,0x00,0x00,0x00,0x0e,0x00,0x14,0x00,0x00,0x00,0x10,0x00,0x0c,0x00,0x08,
-	    0x00,0x04,0x00,0x0e,0x00,0x00,0x00,0x2c,0x00,0x00,0x00,0x38,0x00,0x00,0x00,0x38,0x00,
-	    0x00,0x00,0x38,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	    0x03,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x03,0x00,0x00,0x00,0x00,
-	    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	]
-
-	struct TestData <: FlatBuffers.Table
-	    bytes::Vector{UInt8}
-	    pos::Base.Int
-	end
-
-	function Base.getproperty(x::TestData, field::Symbol)
-	    if field === :DataInt32
-	        o = FlatBuffers.offset(x, 12)
-	        o != 0 && return FlatBuffers.Array{Int32}(x, o)
-	    else
-	        @warn "field $field not supported"
-	    end
-	end
-
-	d = FlatBuffers.getrootas(TestData, buf, 0);
-	@test d.DataInt32 == UInt32[1,2,3]
-end
+ 
+#@testset "PR 234 Arrow.jl: bugfix parsing primitive arrays" begin
+#	buf = [
+#	    0x14,0x00,0x00,0x00,0x00,0x00,0x0e,0x00,0x14,0x00,0x00,0x00,0x10,0x00,0x0c,0x00,0x08,
+#	    0x00,0x04,0x00,0x0e,0x00,0x00,0x00,0x2c,0x00,0x00,0x00,0x38,0x00,0x00,0x00,0x38,0x00,
+#	    0x00,0x00,0x38,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+#	    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+#	    0x03,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x03,0x00,0x00,0x00,0x00,
+#	    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+#	]
+#
+#	struct TestData <: FlatBuffers.Table
+#	    bytes::Vector{UInt8}
+#	    pos::Base.Int
+#	end
+#
+#	function Base.getproperty(x::TestData, field::Symbol)
+#	    if field === :DataInt32
+#	        o = FlatBuffers.offset(x, 12)
+#	        o != 0 && return FlatBuffers.Array{Int32}(x, o)
+#	    else
+#	        @warn "field $field not supported"
+#	    end
+#	end
+#
+#	d = FlatBuffers.getrootas(TestData, buf, 0);
+#	@test d.DataInt32 == UInt32[1,2,3]
+#end
 
 @testset "monsters example" begin
 	codegendir = "monster/__codegen/"
@@ -72,13 +71,28 @@ end
     	end
     	doubles_ = FlatBuffers.endvector!(b, length(doubles))
 
+		ints = Int32[1, 2, 3]
+		Foo.MonsterStartArrayofintsVector(b, length(ints))
+    	for w in Iterators.reverse(ints)
+    	    FlatBuffers.prependoffset!(b, w)
+    	end
+    	ints_ = FlatBuffers.endvector!(b, length(ints))
+
+		floats = Float32[1.0, 2.0, 3.0]
+		Foo.MonsterStartArrayoffloatsVector(b, length(floats))
+    	for w in Iterators.reverse(floats)
+    	    FlatBuffers.prependoffset!(b, w)
+    	end
+    	floats_ = FlatBuffers.endvector!(b, length(floats))
+
     	Foo.MonsterStart(b)
     	Foo.MonsterAddPos(b, pos)
     	Foo.MonsterAddMana(b, mana)
+		Foo.MonsterAddArrayofints(b, ints_)
 		Foo.MonsterAddMydouble(b, 1.234)
-
 		Foo.MonsterAddArrayofdoubles(b, doubles_)
-
+		Foo.MonsterAddMyfloat(b, 2.34f0)
+		Foo.MonsterAddArrayoffloats(b, floats_)
     	Foo.MonsterAddColor(b, color)
     	Foo.MonsterAddHp(b, hp)
     	Foo.MonsterAddWeapons(b,  weapons)
@@ -100,8 +114,24 @@ end
 		
 		@test monster_.mydouble ===  1.234
 		#@test monster_.arrayofdoubles[1] ===  doubles_[1]
+		#@test monster_[Foo.MonsterProperties.arrayofdoubles][1] ===  doubles_[1]
 
-		@test monster_[Foo.MonsterProperties.arrayofdoubles][1] ===  doubles_[1]
+		@test monster_.myfloat ===  2.34f0
+		#@test monster_.arrayoffloats[1] ===  floats_[1]
+		@show monster_.arrayoffloats[1] 
+		@show monster_.arrayoffloats[2] 
+		@show monster_.arrayoffloats[3] 
+
+		@show monster_.arrayofints[1] 
+		@show monster_.arrayofints[2] 
+		@show monster_.arrayofints[3] 
+
+		#@show monster_.arrayofdoubles[1] 
+		#@show monster_.arrayofdoubles[2] 
+		#@show monster_.arrayofdoubles[3] 
+
+		#@test monster_[Foo.MonsterProperties.arrayofdoubles][1] ===  doubles_[1]
+
 
 	else
 		@info "Didn't find flatc executable in as `ENV[\"FLATC\"]`"
