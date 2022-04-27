@@ -71,6 +71,13 @@ using Test
     	end
     	doubles_ = FlatBuffers.endvector!(b, length(doubles))
 
+		shorts = Int16[1, 2, 3]
+		Foo.MonsterStartArrayofshortsVector(b, length(shorts))
+    	for w in Iterators.reverse(shorts)
+    	    FlatBuffers.prependoffset!(b, w)
+    	end
+    	shorts_ = FlatBuffers.endvector!(b, length(shorts))
+
 		ints = Int32[1, 2, 3]
 		Foo.MonsterStartArrayofintsVector(b, length(ints))
     	for w in Iterators.reverse(ints)
@@ -88,6 +95,7 @@ using Test
     	Foo.MonsterStart(b)
     	Foo.MonsterAddPos(b, pos)
     	Foo.MonsterAddMana(b, mana)
+		Foo.MonsterAddArrayofshorts(b, shorts_)
 		Foo.MonsterAddArrayofints(b, ints_)
 		Foo.MonsterAddMydouble(b, 1.234)
 		Foo.MonsterAddArrayofdoubles(b, doubles_)
@@ -113,11 +121,11 @@ using Test
 	    @test monster_.weapons[2].damage === w2_damage
 		
 		@test monster_.mydouble ===  1.234
-		#@test monster_.arrayofdoubles[1] ===  doubles_[1]
-		#@test monster_[Foo.MonsterProperties.arrayofdoubles][1] ===  doubles_[1]
+		@test monster_.arrayofdoubles[1] ===  doubles_[1]
+		@test monster_[Foo.MonsterProperties.arrayofdoubles][1] ===  doubles_[1]
 
 		@test monster_.myfloat ===  2.34f0
-		#@test monster_.arrayoffloats[1] ===  floats_[1]
+		@test monster_.arrayoffloats[1] ===  floats_[1]
 		@show monster_.arrayoffloats[1] 
 		@show monster_.arrayoffloats[2] 
 		@show monster_.arrayoffloats[3] 
@@ -126,9 +134,10 @@ using Test
 		@show monster_.arrayofints[2] 
 		@show monster_.arrayofints[3] 
 
-		#@show monster_.arrayofdoubles[1] 
-		#@show monster_.arrayofdoubles[2] 
-		#@show monster_.arrayofdoubles[3] 
+		@show monster_.arrayofshorts[1] 
+		@show monster_.arrayofshorts[2] 
+		@show monster_.arrayofshorts[3] 
+
 
 		#@test monster_[Foo.MonsterProperties.arrayofdoubles][1] ===  doubles_[1]
 

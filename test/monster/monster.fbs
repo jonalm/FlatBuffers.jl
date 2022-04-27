@@ -17,8 +17,8 @@ table Monster {
   mana:short = 150;
   hp:short = 100;
   name:string;
+  arrayofshorts: [short];
   arrayofints: [int];
-
   mydouble: double;
   arrayofdoubles: [double];
   myfloat: float;
